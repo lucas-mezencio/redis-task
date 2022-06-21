@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"github.com/go-redis/redis/v8"
 	"sync"
 )
@@ -9,6 +10,8 @@ var (
 	db   *redis.Client
 	once sync.Once
 )
+
+var CTX = context.Background()
 
 func createConnection() *redis.Client {
 	return redis.NewClient(&redis.Options{
