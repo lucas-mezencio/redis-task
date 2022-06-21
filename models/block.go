@@ -32,25 +32,35 @@ func (b *Block) UnmarshalBinary(data []byte) error {
 
 func GetAllBlocks() []Block {
 	db := database.ConnectWithDB()
-	pattern := "*:*"
-	result, err := db.Keys(database.CTX, pattern).Result()
+	keys := getKeys(defaultPattern)
+	if keys == nil {
+		return nil
+	}
+	result, err := db.MGet(database.CTX, keys...).Result()
 	if err != nil {
-		fmt.Println(err)
 		return nil
 	}
 
-	fmt.Println(result)
+	var blocks []Block
+	for _, item := range result {
+		var block Block
+		err := block.UnmarshalBinary([]byte(fmt.Sprint(item)))
+		if err != nil {
+			return []Block{}
+		}
+		blocks = append(blocks, block)
+	}
 
-	return []Block{}
+	return blocks
 }
 
-func getKeys(pattern string) ([]string, error) {
+func getKeys(pattern string) []string {
 	db := database.ConnectWithDB()
 	result, err := db.Keys(database.CTX, pattern).Result()
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	return result, nil
+	return result
 }
 
 func GetBlockById(key string) Block {

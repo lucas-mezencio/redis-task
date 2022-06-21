@@ -26,7 +26,12 @@ func unmockBlock() {
 }
 
 func TestGetAllBlocks(t *testing.T) {
-	GetAllBlocks()
+	t.Run("get array of existing blocks", func(t *testing.T) {
+		mockBlockOnDB()
+		defer unmockBlock()
+		got := GetAllBlocks()
+		assert.Equal(t, []Block{mockBlock}, got)
+	})
 }
 
 func TestGetBlockById(t *testing.T) {
