@@ -1,8 +1,12 @@
 package main
 
-import "redis-task/database/scripts"
+import (
+	"redis-task/database/scripts"
+	"redis-task/routes"
+)
 
 func main() {
 	scripts.FlushDatabase()
 	scripts.PopulateDatabase()
+	routes.HandleRoutes()
 }
