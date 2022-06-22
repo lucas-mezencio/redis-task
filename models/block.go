@@ -65,7 +65,12 @@ func getKeys(pattern string) []string {
 
 func GetBlockById(key string) Block {
 	db := database.ConnectWithDB()
-	result, err := db.Get(database.CTX, key).Result()
+
+	blockKey := getKeys(key + ":*")
+	if len(blockKey) != 1 {
+		return Block{}
+	}
+	result, err := db.Get(database.CTX, blockKey[0]).Result()
 	if err != nil {
 		return Block{}
 	}

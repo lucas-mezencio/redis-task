@@ -38,11 +38,11 @@ func TestGetBlockById(t *testing.T) {
 	t.Run("get existent block", func(t *testing.T) {
 		mockBlockOnDB()
 		defer unmockBlock()
-		got := GetBlockById(mockBlock.ID)
+		got := GetBlockById("C3")
 		assert.Equal(t, mockBlock, got)
 	})
 	t.Run("get inexistent block", func(t *testing.T) {
-		got := GetBlockById(mockBlock.ID)
+		got := GetBlockById("C3")
 		assert.Equal(t, Block{}, got)
 	})
 }

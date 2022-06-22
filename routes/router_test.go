@@ -88,7 +88,7 @@ func TestGetBlockByIdRoute(t *testing.T) {
 	t.Run("get inexistent user", func(t *testing.T) {
 		r.GET("/blocks/:id", handlers.GetBlockByIdHandler)
 
-		req, _ := http.NewRequest("GET", "/blocks/"+mockBlock.ID, nil)
+		req, _ := http.NewRequest("GET", "/blocks/C3", nil)
 		res := httptest.NewRecorder()
 		r.ServeHTTP(res, req)
 
@@ -100,7 +100,7 @@ func TestGetBlockByIdRoute(t *testing.T) {
 		defer unmockBlock()
 		r.GET("/users/:id", handlers.GetBlockByIdHandler)
 
-		req, _ := http.NewRequest("GET", "/users/"+mockBlock.ID, nil)
+		req, _ := http.NewRequest("GET", "/users/C3", nil)
 		res := httptest.NewRecorder()
 		r.ServeHTTP(res, req)
 		assert.Equal(t, http.StatusOK, res.Code)
