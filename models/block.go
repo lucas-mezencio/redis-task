@@ -34,11 +34,11 @@ func GetAllBlocks() []Block {
 	db := database.ConnectWithDB()
 	keys := getKeys(defaultPattern)
 	if keys == nil {
-		return nil
+		return []Block{}
 	}
 	result, err := db.MGet(database.CTX, keys...).Result()
 	if err != nil {
-		return nil
+		return []Block{}
 	}
 
 	var blocks []Block

@@ -8,6 +8,9 @@ import (
 func HandleRoutes() {
 	r := gin.Default()
 
+	r.GET("/blocks", handlers.GetAllBlocksHandler)
+	r.GET("/blocks/:id", handlers.GetBlockByIdHandler)
+
 	r.NoRoute(handlers.NoRouteHandler)
 	err := r.Run()
 	if err != nil {
