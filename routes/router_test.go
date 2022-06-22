@@ -260,7 +260,7 @@ func TestUpdateBlockByIdRoute(t *testing.T) {
 		res := httptest.NewRecorder()
 		r.ServeHTTP(res, req)
 
-		assert.Equal(t, http.NotFound, res.Code)
+		assert.Equal(t, http.StatusNotFound, res.Code)
 	})
 	t.Run("update invalid parent id", func(t *testing.T) {
 		mockBlockOnDB()

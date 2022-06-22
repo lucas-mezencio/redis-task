@@ -27,7 +27,7 @@ func CreateBlockHandler(c *gin.Context) {
 	var block models.Block
 	err := c.ShouldBindJSON(&block)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, nil)
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
@@ -39,7 +39,7 @@ func CreateBlockHandler(c *gin.Context) {
 		})
 		return
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, block)
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -47,5 +47,31 @@ func CreateBlockHandler(c *gin.Context) {
 }
 
 func UpdateBlockById(c *gin.Context) {
+	id := c.Param("id")
+	var newBlock models.Block
 
+	err := c.ShouldBindJSON(&newBlock)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	err = models.UpdateBlock(id, newBlock)
+	if err == models.ErrBlockNotExists {
+		c.JSON(http.StatusNotFound, gin.H{
+			"data":  newBlock,
+			"error": err.Error(),
+		})
+		return
+	} else if err == models.ErrInvalidParentId {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":  newBlock,
+			"error": err.Error(),
+		})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, newBlock)
 }
