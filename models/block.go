@@ -7,11 +7,6 @@ import (
 	"redis-task/database"
 )
 
-//type Tree struct {
-//	Block    Block
-//	Children []Block
-//}
-
 const defaultPattern string = "*:*"
 
 type Block struct {
