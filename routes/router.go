@@ -10,6 +10,8 @@ func HandleRoutes() {
 
 	r.GET("/blocks", handlers.GetAllBlocksHandler)
 	r.GET("/blocks/:id", handlers.GetBlockByIdHandler)
+	r.POST("/blocks", handlers.CreateBlockHandler)
+
 	r.GET("/tree/:id", handlers.GetTreeBellowId)
 
 	r.NoRoute(handlers.NoRouteHandler)

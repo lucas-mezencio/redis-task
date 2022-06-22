@@ -6,11 +6,15 @@ import (
 	"fmt"
 	geojson "github.com/paulmach/go.geojson"
 	"redis-task/database"
+	"reflect"
 )
 
 const defaultPattern string = "*:*"
 
-var ErrBlockAlreadyExists = errors.New("this key already exists on database")
+var (
+	ErrBlockAlreadyExists = errors.New("this key already exists on database")
+	ErrInvalidParentId    = errors.New("invalid parent id or parent doesn't exists")
+)
 
 type Block struct {
 	ID       string           `json:"id,omitempty"`
@@ -83,6 +87,13 @@ func GetBlockById(key string) Block {
 func CreateBlock(block Block) error {
 	if existentKeys := getKeys(block.ID); len(existentKeys) != 0 {
 		return ErrBlockAlreadyExists
+	}
+
+	if block.ParentID != "0" {
+		parentBlock := GetBlockById(block.ParentID)
+		if reflect.DeepEqual(parentBlock, Block{}) {
+			return ErrInvalidParentId
+		}
 	}
 
 	db := database.ConnectWithDB()

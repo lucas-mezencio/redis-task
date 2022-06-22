@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	geojson "github.com/paulmach/go.geojson"
@@ -162,7 +163,7 @@ func TestGetBlockByIdRoute(t *testing.T) {
 	})
 }
 
-func TestGetTreeBellowId(t *testing.T) {
+func TestGetTreeBellowIdRoute(t *testing.T) {
 	r := setupTestRoutes()
 	r.GET("/tree/:id", handlers.GetTreeBellowId)
 
@@ -191,5 +192,41 @@ func TestGetTreeBellowId(t *testing.T) {
 			t.Error(err)
 		}
 		assert.Equal(t, treeMock, gotTree)
+	})
+}
+
+func TestCreateBlockRoute(t *testing.T) {
+	r := setupTestRoutes()
+	r.POST("/blocks", handlers.CreateBlockHandler)
+	bytesUser, _ := json.Marshal(mockBlock)
+	t.Run("create new block", func(t *testing.T) {
+		unmockBlock()
+
+		req, _ := http.NewRequest("POST", "/blocks", bytes.NewBuffer(bytesUser))
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusCreated, res.Code)
+
+		var gotBlock models.Block
+		err := json.Unmarshal(res.Body.Bytes(), &gotBlock)
+		if err != nil {
+			t.Error(err)
+		}
+		assert.Equal(t, mockBlock, gotBlock)
+
+		unmockBlock()
+	})
+
+	t.Run("create existing block", func(t *testing.T) {
+		unmockBlock()
+		mockBlockOnDB()
+
+		req, _ := http.NewRequest("POST", "/blocks", bytes.NewBuffer(bytesUser))
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		unmockBlock()
 	})
 }
