@@ -2,12 +2,15 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	geojson "github.com/paulmach/go.geojson"
 	"redis-task/database"
 )
 
 const defaultPattern string = "*:*"
+
+var ErrBlockAlreadyExists = errors.New("this key already exists on database")
 
 type Block struct {
 	ID       string           `json:"id,omitempty"`
@@ -75,4 +78,17 @@ func GetBlockById(key string) Block {
 		return Block{}
 	}
 	return block
+}
+
+func CreateBlock(block Block) error {
+	if existentKeys := getKeys(block.ID); len(existentKeys) != 0 {
+		return ErrBlockAlreadyExists
+	}
+
+	db := database.ConnectWithDB()
+	err := db.Set(database.CTX, block.ID, block, 0).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }

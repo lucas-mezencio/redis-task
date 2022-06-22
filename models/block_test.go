@@ -22,7 +22,7 @@ func mockBlockOnDB() {
 
 func unmockBlock() {
 	db := database.ConnectWithDB()
-	db.Del(database.CTX, mockBlock.ID)
+	db.FlushAll(database.CTX)
 }
 
 func TestGetAllBlocks(t *testing.T) {
@@ -44,5 +44,24 @@ func TestGetBlockById(t *testing.T) {
 	t.Run("get inexistent block", func(t *testing.T) {
 		got := GetBlockById("C3")
 		assert.Equal(t, Block{}, got)
+	})
+}
+
+func TestCreateBlock(t *testing.T) {
+	t.Run("insert existent key", func(t *testing.T) {
+		mockBlockOnDB()
+		defer unmockBlock()
+
+		err := CreateBlock(mockBlock)
+		assert.Error(t, err)
+	})
+	t.Run("insert new block", func(t *testing.T) {
+		unmockBlock()
+		err := CreateBlock(mockBlock)
+		if err != nil {
+			t.Error(err)
+		}
+		gotBlock := GetBlockById("C3")
+		assert.Equal(t, mockBlock, gotBlock)
 	})
 }
