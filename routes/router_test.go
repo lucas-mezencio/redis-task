@@ -230,3 +230,47 @@ func TestCreateBlockRoute(t *testing.T) {
 		unmockBlock()
 	})
 }
+
+func TestUpdateBlockByIdRoute(t *testing.T) {
+	r := setupTestRoutes()
+	r.PUT("/blocks/:id", handlers.UpdateBlockById)
+	updatedBlock := mockBlock
+	t.Run("update valid block", func(t *testing.T) {
+		mockBlockOnDB()
+		defer unmockBlock()
+		bytesUpdatedBlock, _ := json.Marshal(updatedBlock)
+
+		req, _ := http.NewRequest("PUT", "/blocks/C3", bytes.NewBuffer(bytesUpdatedBlock))
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		var gotBlock models.Block
+		err := json.Unmarshal(res.Body.Bytes(), &gotBlock)
+		if err != nil {
+			t.Error(err)
+		}
+		assert.Equal(t, updatedBlock, gotBlock)
+	})
+	t.Run("update inexistent block", func(t *testing.T) {
+		unmockBlock()
+		bytesUpdatedBlock, _ := json.Marshal(updatedBlock)
+		req, _ := http.NewRequest("PUT", "/blocks/C3", bytes.NewBuffer(bytesUpdatedBlock))
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.NotFound, res.Code)
+	})
+	t.Run("update invalid parent id", func(t *testing.T) {
+		mockBlockOnDB()
+		defer unmockBlock()
+		updatedBlock.ParentID = "asdf"
+		bytesUpdatedBlock, _ := json.Marshal(updatedBlock)
+		req, _ := http.NewRequest("PUT", "/blocks/C3", bytes.NewBuffer(bytesUpdatedBlock))
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+	})
+}

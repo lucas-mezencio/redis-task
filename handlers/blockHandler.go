@@ -45,3 +45,7 @@ func CreateBlockHandler(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, block)
 }
+
+func UpdateBlockById(c *gin.Context) {
+
+}
