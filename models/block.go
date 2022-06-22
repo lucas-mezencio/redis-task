@@ -14,6 +14,7 @@ const defaultPattern string = "*:*"
 var (
 	ErrBlockAlreadyExists = errors.New("this key already exists on database")
 	ErrInvalidParentId    = errors.New("invalid parent id or parent doesn't exists")
+	ErrBlockNotExists     = errors.New("key not exists on database")
 )
 
 type Block struct {
@@ -88,7 +89,17 @@ func CreateBlock(block Block) error {
 	if existentKeys := getKeys(block.ID); len(existentKeys) != 0 {
 		return ErrBlockAlreadyExists
 	}
+	return setBlock(block)
+}
 
+func UpdateBlock(key string, block Block) error {
+	if checkBlockKey := getKeys(key + ":*"); len(checkBlockKey) != 1 {
+		return ErrBlockNotExists
+	}
+	return setBlock(block)
+}
+
+func setBlock(block Block) error {
 	if block.ParentID != "0" {
 		parentBlock := GetBlockById(block.ParentID)
 		if reflect.DeepEqual(parentBlock, Block{}) {

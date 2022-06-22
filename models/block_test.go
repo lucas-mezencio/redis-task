@@ -65,3 +65,28 @@ func TestCreateBlock(t *testing.T) {
 		assert.Equal(t, mockBlock, gotBlock)
 	})
 }
+
+func TestUpdateBlock(t *testing.T) {
+	updatedMock := mockBlock
+	t.Run("valid update block", func(t *testing.T) {
+		mockBlockOnDB()
+		err := UpdateBlock("C3", updatedMock)
+		if err != nil {
+			t.Error(err)
+		}
+		gotBlock := GetBlockById("C3")
+		assert.Equal(t, updatedMock, gotBlock)
+		unmockBlock()
+	})
+	t.Run("invalid key", func(t *testing.T) {
+		unmockBlock()
+		err := UpdateBlock("C3", updatedMock)
+		assert.Error(t, err)
+	})
+	t.Run("indvalid parent id", func(t *testing.T) {
+		updatedMock.ParentID = "asdf"
+		mockBlockOnDB()
+		err := UpdateBlock("C3", updatedMock)
+		assert.Error(t, err)
+	})
+}
