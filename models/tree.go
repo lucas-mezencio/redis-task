@@ -12,13 +12,20 @@ type Tree struct {
 
 func GetTreeById(id string) Tree {
 	var tree Tree
-	tree.Block = GetBlockById(id)
-	if reflect.DeepEqual(tree.Block, Block{}) {
-		return Tree{}
+	var blockId string
+	var keysChildren []string
+	if id == "0" {
+		keysChildren = getKeys("*:" + id)
+		tree.Block = Block{}
+	} else {
+		tree.Block = GetBlockById(id)
+		if reflect.DeepEqual(tree.Block, Block{}) {
+			return Tree{}
+		}
+		blockId = getIndividualBlockId(tree.Block.ID)
+		keysChildren = getKeys("*:" + blockId)
 	}
 
-	blockId := getIndividualBlockId(tree.Block.ID)
-	keysChildren := getKeys("*:" + blockId)
 	for _, keyChild := range keysChildren {
 		tree.Children = append(tree.Children, GetTreeById(getIndividualBlockId(keyChild)))
 	}

@@ -31,6 +31,54 @@ func unmockBlock() {
 	db.Del(database.CTX, mockBlock.ID)
 }
 
+var (
+	c0 = models.Block{
+		ID:       "C0:0",
+		Name:     "Cliente A",
+		ParentID: "0",
+		Centroid: *geojson.NewPointGeometry([]float64{-48.289546966552734, -18.931050694554795}),
+		Value:    10000,
+	}
+	f1 = models.Block{
+		ID:       "F1:C0",
+		Name:     "FAZENDA 1",
+		ParentID: "C0",
+		Centroid: *geojson.NewPointGeometry([]float64{-52.9046630859375, -18.132801356084773}),
+		Value:    1000,
+	}
+)
+
+var treeMock = models.Tree{
+	Block: c0,
+	Children: []models.Tree{
+		{
+			Block:    f1,
+			Children: nil,
+		},
+	},
+}
+
+func mockTree(t *testing.T) {
+	unmockTree(t)
+	db := database.ConnectWithDB()
+	blocks := []models.Block{c0, f1}
+	for _, block := range blocks {
+		err := db.Set(database.CTX, block.ID, block, 0).Err()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+}
+
+func unmockTree(t *testing.T) {
+	db := database.ConnectWithDB()
+	err := db.FlushAll(database.CTX).Err()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func setupTestRoutes() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -111,5 +159,37 @@ func TestGetBlockByIdRoute(t *testing.T) {
 			t.Errorf("Error %g", err)
 		}
 		assert.Equal(t, mockBlock, gotBlock)
+	})
+}
+
+func TestGetTreeBellowId(t *testing.T) {
+	r := setupTestRoutes()
+	r.GET("/tree/:id", handlers.GetTreeBellowId)
+
+	t.Run("nonexistent tree", func(t *testing.T) {
+		// limpa o banco
+		unmockTree(t)
+		req, _ := http.NewRequest("GET", "/tree/C0", nil)
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusNotFound, res.Code)
+	})
+
+	t.Run("mocked tree", func(t *testing.T) {
+		unmockTree(t)
+		mockTree(t)
+		req, _ := http.NewRequest("GET", "/tree/C0", nil)
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		var gotTree models.Tree
+		err := json.Unmarshal(res.Body.Bytes(), &gotTree)
+		if err != nil {
+			t.Error(err)
+		}
+		assert.Equal(t, treeMock, gotTree)
 	})
 }

@@ -22,13 +22,6 @@ var (
 		Centroid: *geojson.NewPointGeometry([]float64{-52.9046630859375, -18.132801356084773}),
 		Value:    1000,
 	}
-	//f2 = Block{
-	//	ID:       "F2:C0",
-	//	Name:     "FAZENDA 2",
-	//	ParentID: "C0",
-	//	Centroid: *geojson.NewPointGeometry([]float64{54.60205078125, -25.52509317964987}),
-	//	Value:    2000,
-	//}
 )
 
 var treeMock = Tree{
@@ -38,10 +31,6 @@ var treeMock = Tree{
 			Block:    f1,
 			Children: nil,
 		},
-		//{
-		//	Block:    f2,
-		//	Children: nil,
-		//},
 	},
 }
 
