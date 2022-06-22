@@ -23,6 +23,7 @@ var mockBlock = models.Block{
 }
 
 func mockBlockOnDB() {
+	unmockBlock()
 	db := database.ConnectWithDB()
 	db.Set(database.CTX, mockBlock.ID, mockBlock, 0)
 }
@@ -219,7 +220,6 @@ func TestCreateBlockRoute(t *testing.T) {
 	})
 
 	t.Run("create existing block", func(t *testing.T) {
-		unmockBlock()
 		mockBlockOnDB()
 
 		req, _ := http.NewRequest("POST", "/blocks", bytes.NewBuffer(bytesUser))
