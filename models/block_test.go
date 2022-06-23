@@ -109,4 +109,28 @@ func TestDeleteBlock(t *testing.T) {
 		err := DeleteBlockById("C3")
 		assert.Error(t, err)
 	})
+
+	t.Run("parent id transition", func(t *testing.T) {
+		mockBlockOnDB()
+		child := Block{
+			ID:       "T1:C3",
+			Name:     "Bloco teste",
+			ParentID: "0",
+			Centroid: *geojson.NewPointGeometry([]float64{-48.289546966552734, -18.931050694554795}),
+			Value:    50000000,
+		}
+		err := CreateBlock(child)
+		if err != nil {
+			t.Error(err)
+		}
+
+		err = DeleteBlockById("C3")
+		if err != nil {
+			t.Error(err)
+		}
+		updatedChild := GetBlockById("T1")
+		assert.Equal(t, "T1:0", updatedChild.ID)
+		assert.Equal(t, "0", updatedChild.ParentID)
+		unmockBlock()
+	})
 }
