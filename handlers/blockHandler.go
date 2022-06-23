@@ -17,7 +17,7 @@ func GetAllBlocksHandler(c *gin.Context) {
 
 // GetBlockByIdHandler handles the route to get a single block by a given id
 //			GET /blocks/id
-// If the block is not found return null body and NotFound Status
+// if the block is not found return null body and NotFound Status
 //
 // Returns the block data as JSON and OK Status
 func GetBlockByIdHandler(c *gin.Context) {
@@ -34,11 +34,11 @@ func GetBlockByIdHandler(c *gin.Context) {
 
 // CreateBlockHandler handles the route to create a block
 //			POST /blocks
-// If the application can't parse the body of request it returns a BadRequest Status
+// if the application can't parse the body of request it returns a BadRequest Status
 //
-// If the block already exists returns a JSON with the given data and the error - BadRequest Status
+// if the block already exists returns a JSON with the given data and the error - BadRequest Status
 //
-//If the block have an invalid parent id returns a JSON with given data and the error - BadRequest Status
+// if the block have an invalid parent id returns a JSON with given data and the error - BadRequest Status
 //
 //Returns the given data and Created Status
 func CreateBlockHandler(c *gin.Context) {
@@ -66,11 +66,11 @@ func CreateBlockHandler(c *gin.Context) {
 
 // UpdateBlockByIdHandler handles the update route to update a block
 //			PUT /blocks/id
-// If the application can't parse the body of request it returns a BadRequest Status
+// if the application can't parse the body of request it returns a BadRequest Status
 //
-//If the block don't exist returns a JSON with given data and the error - NotFound Status
+// if the block don't exist returns a JSON with given data and the error - NotFound Status
 //
-// If the block have an invalid parent id returns a JSON with given data and the error - BadRequest Status
+// if the block have an invalid parent id returns a JSON with given data and the error - BadRequest Status
 //
 // Returns the updated block data as JSON and Ok Status
 func UpdateBlockByIdHandler(c *gin.Context) {
@@ -105,9 +105,9 @@ func UpdateBlockByIdHandler(c *gin.Context) {
 
 // DeleteBlockByIdHandler handles the route to delete a block
 //			DELETE /blocks/id
-// If the block don't exist returns a NotFound Status
+// if the block don't exist returns a NotFound Status
 //
-// If the block hava an invalid parent id returns a BadRequestStatus
+// if the block hava an invalid parent id returns a BadRequestStatus
 //
 // Returns an Ok Status
 func DeleteBlockByIdHandler(c *gin.Context) {

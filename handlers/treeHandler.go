@@ -9,7 +9,7 @@ import (
 
 // GetTreeBellowId handles the route to get a tree based on a given id
 //			GET /tree/id
-// If the root block doesn't exist return a NotFound Status
+// if the root block doesn't exist return a NotFound Status
 //
 // Returns the tree with the given id block as root and OK Status
 func GetTreeBellowId(c *gin.Context) {
