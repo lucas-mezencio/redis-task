@@ -113,13 +113,6 @@ func DeleteBlockById(key string) error {
 
 	block := GetBlockById(utils.GetIndividualBlockId(blockKey))
 
-	if block.ParentID != "0" {
-		parentBlock := GetBlockById(block.ParentID)
-		if reflect.DeepEqual(parentBlock, Block{}) {
-			return ErrInvalidParentId
-		}
-	}
-
 	for _, childBlock := range childrenBlocks {
 		childBlock.ID = utils.UpdatedBlockId(childBlock.ID, block.ParentID)
 		childBlock.ParentID = block.ParentID
