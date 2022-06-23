@@ -13,7 +13,7 @@ func HandleRoutes() {
 	r.GET("/blocks", handlers.GetAllBlocksHandler)
 	r.GET("/blocks/:id", handlers.GetBlockByIdHandler)
 	r.POST("/blocks", handlers.CreateBlockHandler)
-	r.PUT("/blocks:id", handlers.UpdateBlockByIdHandler)
+	r.PUT("/blocks/:id", handlers.UpdateBlockByIdHandler)
 	r.DELETE("/blocks/:id", handlers.DeleteBlockByIdHandler)
 
 	r.GET("/tree/:id", handlers.GetTreeBellowId)
