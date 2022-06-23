@@ -15,6 +15,7 @@ var (
 	ErrBlockAlreadyExists = errors.New("this key already exists on database")
 	ErrInvalidParentId    = errors.New("invalid parent id or parent doesn't exists")
 	ErrBlockNotExists     = errors.New("key not exists on database")
+	//ErrInvalidKey         = errors.New("this key is invalid - follow the pattern it:father")
 )
 
 type Block struct {
@@ -57,15 +58,6 @@ func GetAllBlocks() []Block {
 	return blocks
 }
 
-func getKeys(pattern string) []string {
-	db := database.ConnectWithDB()
-	result, err := db.Keys(database.CTX, pattern).Result()
-	if err != nil {
-		return nil
-	}
-	return result
-}
-
 func GetBlockById(key string) Block {
 	db := database.ConnectWithDB()
 
@@ -99,6 +91,54 @@ func UpdateBlock(key string, block Block) error {
 	return setBlock(block)
 }
 
+func DeleteBlockById(key string) error {
+	db := database.ConnectWithDB()
+	checkBlockKey := getKeys(key + ":*")
+	if len(checkBlockKey) != 1 {
+		return ErrBlockNotExists
+	}
+	blockKey := checkBlockKey[0]
+	childrenKeys := getKeys("*:" + getIndividualBlockId(blockKey))
+	if len(childrenKeys) == 0 {
+		err := db.Del(database.CTX, blockKey).Err()
+		return err
+	}
+
+	result, err := db.MGet(database.CTX, childrenKeys...).Result()
+	if err != nil {
+		return err
+	}
+
+	var childrenBlocks []Block
+	for _, item := range result {
+		var childBlock Block
+		err := childBlock.UnmarshalBinary([]byte(fmt.Sprint(item)))
+		if err != nil {
+			return err
+		}
+		childrenBlocks = append(childrenBlocks, childBlock)
+	}
+
+	block := GetBlockById(getIndividualBlockId(blockKey))
+	for _, childBlock := range childrenBlocks {
+		childBlock.ID = updatedBlockId(childBlock.ID, block.ParentID)
+		childBlock.ParentID = block.ParentID
+		err := CreateBlock(childBlock)
+		if err != nil {
+			return err
+		}
+	}
+	keysToDelete := append(childrenKeys, block.ID)
+	err = db.Del(database.CTX, keysToDelete...).Err()
+
+	return err
+}
+
+func updatedBlockId(key, parentKey string) string {
+	blockKey := getIndividualBlockId(key)
+	return blockKey + ":" + parentKey
+}
+
 func setBlock(block Block) error {
 	if block.ParentID != "0" {
 		parentBlock := GetBlockById(block.ParentID)
@@ -113,4 +153,13 @@ func setBlock(block Block) error {
 		return err
 	}
 	return nil
+}
+
+func getKeys(pattern string) []string {
+	db := database.ConnectWithDB()
+	result, err := db.Keys(database.CTX, pattern).Result()
+	if err != nil {
+		return nil
+	}
+	return result
 }
