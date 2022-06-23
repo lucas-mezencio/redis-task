@@ -22,7 +22,7 @@ func GetKeys(pattern string) []string {
 
 // GetIndividualBlockId gets the id of a block given its key
 //			composite key:	thisBlock:parentBlock
-// 	returns the individual id of a block
+// returns the individual id of a block
 func GetIndividualBlockId(compositeKey string) string {
 	return strings.Split(compositeKey, ":")[0]
 }
