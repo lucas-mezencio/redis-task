@@ -98,6 +98,7 @@ func DeleteBlockById(key string) error {
 	if len(checkBlockKey) != 1 {
 		return ErrBlockNotExists
 	}
+
 	blockKey := checkBlockKey[0]
 	childrenKeys := utils.GetKeys("*:" + utils.GetIndividualBlockId(blockKey))
 	if len(childrenKeys) == 0 {
@@ -111,6 +112,14 @@ func DeleteBlockById(key string) error {
 	}
 
 	block := GetBlockById(utils.GetIndividualBlockId(blockKey))
+
+	if block.ParentID != "0" {
+		parentBlock := GetBlockById(block.ParentID)
+		if reflect.DeepEqual(parentBlock, Block{}) {
+			return ErrInvalidParentId
+		}
+	}
+
 	for _, childBlock := range childrenBlocks {
 		childBlock.ID = utils.UpdatedBlockId(childBlock.ID, block.ParentID)
 		childBlock.ParentID = block.ParentID
