@@ -48,7 +48,7 @@ func (b *Block) UnmarshalBinary(data []byte) error {
 
 // GetAllBlocks consults the database to search for all blocks
 //
-// In case of error or empty database returns an empty Block slice
+// in case of error or empty database returns an empty Block slice
 //
 // Returns a BlockSlice
 func GetAllBlocks() []Block {
@@ -77,7 +77,7 @@ func GetAllBlocks() []Block {
 
 // GetBlockById consults the database to search for a specific block given an id (key)
 //
-// In case of error or Block not found on database returns an empty Block
+// in case of error or Block not found on database returns an empty Block
 //
 // Returns the Block that matches the key parameter
 func GetBlockById(key string) Block {
@@ -101,9 +101,9 @@ func GetBlockById(key string) Block {
 
 // CreateBlock create/insert a block on database
 //
-// If the key of the block already exists return a ErrBlockAlreadyExists
+// if the key of the block already exists return a ErrBlockAlreadyExists
 //
-// If the parent id of block is invalid returns a ErrInvalidParentId
+// if the parent id of block is invalid returns a ErrInvalidParentId
 //
 // Returns a nil value as error if the block is created
 func CreateBlock(block Block) error {
@@ -115,9 +115,9 @@ func CreateBlock(block Block) error {
 
 // UpdateBlock updates a block on database
 //
-// If the block doesn't exist on database returns a ErrBlockNotExists
+// if the block doesn't exist on database returns a ErrBlockNotExists
 //
-// If the parent id of block is invalid returns a ErrInvalidParentId
+// if the parent id of block is invalid returns a ErrInvalidParentId
 //
 // Returns a nil value as error if the block gets updated
 func UpdateBlock(key string, block Block) error {
@@ -129,9 +129,9 @@ func UpdateBlock(key string, block Block) error {
 
 // DeleteBlockById deletes a block on database and transfer its parent's to its children as parent
 //
-// If the block doesn't exist on database returns a ErrBlockNotExists
+// if the block doesn't exist on database returns a ErrBlockNotExists
 //
-// If the parent id of block is invalid returns a ErrInvalidParentId
+// if the parent id of block is invalid returns a ErrInvalidParentId
 //
 // Returns a nil value as error if the block gets deleted
 func DeleteBlockById(key string) error {
