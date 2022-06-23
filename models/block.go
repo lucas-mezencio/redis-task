@@ -1,3 +1,4 @@
+// Package models holds the models of the applications and their database operations
 package models
 
 import (
@@ -10,15 +11,23 @@ import (
 	"reflect"
 )
 
+// defaultPattern the default pattern to search all ids of blocks
 const defaultPattern string = "*:*"
 
 var (
+	// ErrBlockAlreadyExists Error thrown when a given block already exists on db
 	ErrBlockAlreadyExists = errors.New("this key already exists on database")
-	ErrInvalidParentId    = errors.New("invalid parent id or parent doesn't exists")
-	ErrBlockNotExists     = errors.New("key not exists on database")
+
+	// ErrInvalidParentId  Error thrown when a given block have an invalid parent id
+	ErrInvalidParentId = errors.New("invalid parent id or parent doesn't exists")
+
+	// ErrBlockNotExists  Error thrown when a given block don't exist on db
+	ErrBlockNotExists = errors.New("key not exists on database")
+
 	//ErrInvalidKey         = errors.New("this key is invalid - follow the pattern it:father")
 )
 
+// Block Definition of the base structure of the application
 type Block struct {
 	ID       string           `json:"id,omitempty"`
 	Name     string           `json:"name,omitempty"`
@@ -27,14 +36,21 @@ type Block struct {
 	Value    float64          `json:"value,omitempty"`
 }
 
+// MarshalBinary implementation of a needed interface for the go-redis lib
 func (b Block) MarshalBinary() ([]byte, error) {
 	return json.Marshal(b)
 }
 
+// UnmarshalBinary implementation of a needed interface for the go-redis lib
 func (b *Block) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, b)
 }
 
+// GetAllBlocks consults the database to search for all blocks
+//
+// In case of error or empty database returns an empty Block slice
+//
+// Returns a BlockSlice
 func GetAllBlocks() []Block {
 	db := database.ConnectWithDB()
 	keys := utils.GetKeys(defaultPattern)
@@ -59,6 +75,11 @@ func GetAllBlocks() []Block {
 	return blocks
 }
 
+// GetBlockById consults the database to search for a specific block given an id (key)
+//
+// In case of error or Block not found on database returns an empty Block
+//
+// Returns the Block that matches the key parameter
 func GetBlockById(key string) Block {
 	db := database.ConnectWithDB()
 
@@ -78,6 +99,13 @@ func GetBlockById(key string) Block {
 	return block
 }
 
+// CreateBlock create/insert a block on database
+//
+// If the key of the block already exists return a ErrBlockAlreadyExists
+//
+// If the parent id of block is invalid returns a ErrInvalidParentId
+//
+// Returns a nil value as error if the block is created
 func CreateBlock(block Block) error {
 	if existentKeys := utils.GetKeys(block.ID); len(existentKeys) != 0 {
 		return ErrBlockAlreadyExists
@@ -85,6 +113,13 @@ func CreateBlock(block Block) error {
 	return setBlock(block)
 }
 
+// UpdateBlock updates a block on database
+//
+// If the block doesn't exist on database returns a ErrBlockNotExists
+//
+// If the parent id of block is invalid returns a ErrInvalidParentId
+//
+// Returns a nil value as error if the block gets updated
 func UpdateBlock(key string, block Block) error {
 	if checkBlockKey := utils.GetKeys(key + ":*"); len(checkBlockKey) != 1 {
 		return ErrBlockNotExists
@@ -92,6 +127,13 @@ func UpdateBlock(key string, block Block) error {
 	return setBlock(block)
 }
 
+// DeleteBlockById deletes a block on database and transfer its parent's to its children as parent
+//
+// If the block doesn't exist on database returns a ErrBlockNotExists
+//
+// If the parent id of block is invalid returns a ErrInvalidParentId
+//
+// Returns a nil value as error if the block gets deleted
 func DeleteBlockById(key string) error {
 	db := database.ConnectWithDB()
 	checkBlockKey := utils.GetKeys(key + ":*")
@@ -127,6 +169,7 @@ func DeleteBlockById(key string) error {
 	return err
 }
 
+// setBlock directly inserts a block on database and treats the validity of the block parent
 func setBlock(block Block) error {
 	if block.ParentID != "0" {
 		parentBlock := GetBlockById(block.ParentID)
@@ -143,6 +186,7 @@ func setBlock(block Block) error {
 	return nil
 }
 
+// getChildren gets a slice of Block given the slice of keys
 func getChildren(childrenKeys []string) ([]Block, error) {
 	db := database.ConnectWithDB()
 	result, err := db.MGet(database.CTX, childrenKeys...).Result()
