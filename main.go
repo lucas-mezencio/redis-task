@@ -1,12 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"redis-task/database/scripts"
-	"redis-task/routes"
+	"redis-task/models"
 )
 
 func main() {
 	scripts.FlushDatabase()
 	scripts.PopulateDatabase(nil)
-	routes.HandleRoutes()
+	err := models.DeleteBlockById("F3")
+	if err != nil {
+		fmt.Println(err)
+	}
+	//routes.HandleRoutes()
 }

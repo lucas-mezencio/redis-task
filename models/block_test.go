@@ -88,5 +88,25 @@ func TestUpdateBlock(t *testing.T) {
 		mockBlockOnDB()
 		err := UpdateBlock("C3", updatedMock)
 		assert.Error(t, err)
+		unmockBlock()
+	})
+}
+
+func TestDeleteBlock(t *testing.T) {
+	t.Run("existent block", func(t *testing.T) {
+		mockBlockOnDB()
+		defer unmockBlock()
+		err := DeleteBlockById("C3")
+		if err != nil {
+			t.Error(err)
+		}
+		gotBlock := GetBlockById("C3")
+		assert.Equal(t, Block{}, gotBlock)
+	})
+
+	t.Run("nonexistent block", func(t *testing.T) {
+		unmockBlock()
+		err := DeleteBlockById("C3")
+		assert.Error(t, err)
 	})
 }
