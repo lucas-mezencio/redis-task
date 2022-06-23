@@ -1,3 +1,4 @@
+// Package routes is responsible for defining the routes of the application
 package routes
 
 import (
@@ -5,6 +6,7 @@ import (
 	"redis-task/handlers"
 )
 
+// HandleRoutes handles the application routes
 func HandleRoutes() {
 	r := gin.Default()
 
