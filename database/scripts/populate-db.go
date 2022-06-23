@@ -1,3 +1,4 @@
+// Package scripts is responsible for functions that are related to the database population and flushing
 package scripts
 
 import (
@@ -7,6 +8,8 @@ import (
 	"redis-task/models"
 )
 
+// FlushDatabase clear all db data
+// Can be called on main function to create a clean scenario of the application
 func FlushDatabase() {
 	db := database.ConnectWithDB()
 	//defer db.Close()
@@ -17,6 +20,9 @@ func FlushDatabase() {
 	}
 }
 
+// PopulateDatabase populates the database with given blocks
+// receive an slice of Block's
+// if the slice is nil populates the database with default data
 func PopulateDatabase(blocks []models.Block) {
 	db := database.ConnectWithDB()
 	//defer db.Close()
