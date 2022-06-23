@@ -46,7 +46,7 @@ func CreateBlockHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, block)
 }
 
-func UpdateBlockById(c *gin.Context) {
+func UpdateBlockByIdHandler(c *gin.Context) {
 	id := c.Param("id")
 	var newBlock models.Block
 
@@ -74,4 +74,17 @@ func UpdateBlockById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, newBlock)
+}
+
+func DeleteBlockByIdHandler(c *gin.Context) {
+	id := c.Param("id")
+	err := models.DeleteBlockById(id)
+	if err == models.ErrBlockNotExists {
+		c.JSON(http.StatusNotFound, nil)
+		return
+	} else if err == models.ErrInvalidParentId || err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
 }
