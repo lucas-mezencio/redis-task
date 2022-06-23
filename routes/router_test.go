@@ -30,7 +30,7 @@ func mockBlockOnDB() {
 
 func unmockBlock() {
 	db := database.ConnectWithDB()
-	db.Del(database.CTX, mockBlock.ID)
+	db.FlushAll(database.CTX)
 }
 
 var (
@@ -233,7 +233,7 @@ func TestCreateBlockRoute(t *testing.T) {
 
 func TestUpdateBlockByIdRoute(t *testing.T) {
 	r := setupTestRoutes()
-	r.PUT("/blocks/:id", handlers.UpdateBlockById)
+	r.PUT("/blocks/:id", handlers.UpdateBlockByIdHandler)
 	updatedBlock := mockBlock
 	t.Run("update valid block", func(t *testing.T) {
 		mockBlockOnDB()
@@ -272,5 +272,54 @@ func TestUpdateBlockByIdRoute(t *testing.T) {
 		r.ServeHTTP(res, req)
 
 		assert.Equal(t, http.StatusBadRequest, res.Code)
+	})
+}
+
+func TestDeleteByIdRoute(t *testing.T) {
+	r := setupTestRoutes()
+	r.DELETE("/blocks/:id", handlers.DeleteBlockByIdHandler)
+	t.Run("existent block", func(t *testing.T) {
+		mockBlockOnDB()
+
+		req, _ := http.NewRequest("DELETE", "/blocks/C3", nil)
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+		gotBlock := models.GetBlockById("C3")
+		assert.Equal(t, models.Block{}, gotBlock)
+	})
+
+	t.Run("nonexistent block", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", "/blocks/C3", nil)
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusNotFound, res.Code)
+	})
+
+	t.Run("child parent key transition", func(t *testing.T) {
+		mockBlockOnDB()
+		child := models.Block{
+			ID:       "T1:C3",
+			Name:     "Bloco teste",
+			ParentID: "C3",
+			Centroid: *geojson.NewPointGeometry([]float64{-48.289546966552734, -18.931050694554795}),
+			Value:    50000000,
+		}
+		err := models.CreateBlock(child)
+		if err != nil {
+			t.Error(err)
+		}
+
+		req, _ := http.NewRequest("DELETE", "/blocks/C3", nil)
+		res := httptest.NewRecorder()
+		r.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusOK, res.Code)
+
+		updatedChild := models.GetBlockById("T1")
+		assert.Equal(t, "T1:0", updatedChild.ID)
+		assert.Equal(t, "0", updatedChild.ParentID)
+		unmockBlock()
 	})
 }
