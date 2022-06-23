@@ -7,6 +7,7 @@ import (
 	geojson "github.com/paulmach/go.geojson"
 	"redis-task/database"
 	"reflect"
+	"strings"
 )
 
 const defaultPattern string = "*:*"
@@ -104,19 +105,9 @@ func DeleteBlockById(key string) error {
 		return err
 	}
 
-	result, err := db.MGet(database.CTX, childrenKeys...).Result()
+	childrenBlocks, err := getChildrenById(childrenKeys)
 	if err != nil {
 		return err
-	}
-
-	var childrenBlocks []Block
-	for _, item := range result {
-		var childBlock Block
-		err := childBlock.UnmarshalBinary([]byte(fmt.Sprint(item)))
-		if err != nil {
-			return err
-		}
-		childrenBlocks = append(childrenBlocks, childBlock)
 	}
 
 	block := GetBlockById(getIndividualBlockId(blockKey))
@@ -132,11 +123,6 @@ func DeleteBlockById(key string) error {
 	err = db.Del(database.CTX, keysToDelete...).Err()
 
 	return err
-}
-
-func updatedBlockId(key, parentKey string) string {
-	blockKey := getIndividualBlockId(key)
-	return blockKey + ":" + parentKey
 }
 
 func setBlock(block Block) error {
@@ -155,6 +141,25 @@ func setBlock(block Block) error {
 	return nil
 }
 
+func getChildrenById(childrenKeys []string) ([]Block, error) {
+	db := database.ConnectWithDB()
+	result, err := db.MGet(database.CTX, childrenKeys...).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var childrenBlocks []Block
+	for _, item := range result {
+		var childBlock Block
+		err := childBlock.UnmarshalBinary([]byte(fmt.Sprint(item)))
+		if err != nil {
+			return nil, err
+		}
+		childrenBlocks = append(childrenBlocks, childBlock)
+	}
+	return childrenBlocks, nil
+}
+
 func getKeys(pattern string) []string {
 	db := database.ConnectWithDB()
 	result, err := db.Keys(database.CTX, pattern).Result()
@@ -162,4 +167,13 @@ func getKeys(pattern string) []string {
 		return nil
 	}
 	return result
+}
+
+func getIndividualBlockId(compositeKey string) string {
+	return strings.Split(compositeKey, ":")[0]
+}
+
+func updatedBlockId(key, parentKey string) string {
+	blockKey := getIndividualBlockId(key)
+	return blockKey + ":" + parentKey
 }

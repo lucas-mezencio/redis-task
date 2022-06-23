@@ -2,7 +2,6 @@ package models
 
 import (
 	"reflect"
-	"strings"
 )
 
 type Tree struct {
@@ -30,8 +29,4 @@ func GetTreeById(id string) Tree {
 		tree.Children = append(tree.Children, GetTreeById(getIndividualBlockId(keyChild)))
 	}
 	return tree
-}
-
-func getIndividualBlockId(compositeKey string) string {
-	return strings.Split(compositeKey, ":")[0]
 }
