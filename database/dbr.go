@@ -1,3 +1,4 @@
+// Package database is responsible for the database connections management
 package database
 
 import (
@@ -11,8 +12,10 @@ var (
 	once sync.Once
 )
 
+// CTX global variable for the context of database functions
 var CTX = context.Background()
 
+// createConnection create the database connection
 func createConnection() *redis.Client {
 	return redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -21,6 +24,8 @@ func createConnection() *redis.Client {
 	})
 }
 
+// ConnectWithDB creates a singleton variable for the database connection
+// Is based on createConnection hidden function
 func ConnectWithDB() *redis.Client {
 	if db == nil {
 		once.Do(func() {
