@@ -11,11 +11,10 @@ func FlushDatabase() {
 	db := database.ConnectWithDB()
 	//defer db.Close()
 
-	val, err := db.Do(database.CTX, "FLUSHALL").Text()
+	err := db.FlushAll(database.CTX).Err()
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(val)
 }
 
 func PopulateDatabase(blocks []models.Block) {
@@ -97,7 +96,6 @@ func PopulateDatabase(blocks []models.Block) {
 	}
 
 	for _, block := range blocks {
-		fmt.Println(block)
 		err := db.Set(database.CTX, block.ID, block, 0).Err()
 		if err != nil {
 			fmt.Println(err)
