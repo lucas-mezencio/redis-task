@@ -6,8 +6,8 @@ import (
 	"fmt"
 	geojson "github.com/paulmach/go.geojson"
 	"redis-task/database"
+	"redis-task/utils"
 	"reflect"
-	"strings"
 )
 
 const defaultPattern string = "*:*"
@@ -37,7 +37,7 @@ func (b *Block) UnmarshalBinary(data []byte) error {
 
 func GetAllBlocks() []Block {
 	db := database.ConnectWithDB()
-	keys := getKeys(defaultPattern)
+	keys := utils.GetKeys(defaultPattern)
 	if keys == nil {
 		return []Block{}
 	}
@@ -62,7 +62,7 @@ func GetAllBlocks() []Block {
 func GetBlockById(key string) Block {
 	db := database.ConnectWithDB()
 
-	blockKey := getKeys(key + ":*")
+	blockKey := utils.GetKeys(key + ":*")
 	if len(blockKey) != 1 {
 		return Block{}
 	}
@@ -79,14 +79,14 @@ func GetBlockById(key string) Block {
 }
 
 func CreateBlock(block Block) error {
-	if existentKeys := getKeys(block.ID); len(existentKeys) != 0 {
+	if existentKeys := utils.GetKeys(block.ID); len(existentKeys) != 0 {
 		return ErrBlockAlreadyExists
 	}
 	return setBlock(block)
 }
 
 func UpdateBlock(key string, block Block) error {
-	if checkBlockKey := getKeys(key + ":*"); len(checkBlockKey) != 1 {
+	if checkBlockKey := utils.GetKeys(key + ":*"); len(checkBlockKey) != 1 {
 		return ErrBlockNotExists
 	}
 	return setBlock(block)
@@ -94,25 +94,25 @@ func UpdateBlock(key string, block Block) error {
 
 func DeleteBlockById(key string) error {
 	db := database.ConnectWithDB()
-	checkBlockKey := getKeys(key + ":*")
+	checkBlockKey := utils.GetKeys(key + ":*")
 	if len(checkBlockKey) != 1 {
 		return ErrBlockNotExists
 	}
 	blockKey := checkBlockKey[0]
-	childrenKeys := getKeys("*:" + getIndividualBlockId(blockKey))
+	childrenKeys := utils.GetKeys("*:" + utils.GetIndividualBlockId(blockKey))
 	if len(childrenKeys) == 0 {
 		err := db.Del(database.CTX, blockKey).Err()
 		return err
 	}
 
-	childrenBlocks, err := getChildrenById(childrenKeys)
+	childrenBlocks, err := getChildren(childrenKeys)
 	if err != nil {
 		return err
 	}
 
-	block := GetBlockById(getIndividualBlockId(blockKey))
+	block := GetBlockById(utils.GetIndividualBlockId(blockKey))
 	for _, childBlock := range childrenBlocks {
-		childBlock.ID = updatedBlockId(childBlock.ID, block.ParentID)
+		childBlock.ID = utils.UpdatedBlockId(childBlock.ID, block.ParentID)
 		childBlock.ParentID = block.ParentID
 		err := CreateBlock(childBlock)
 		if err != nil {
@@ -141,7 +141,7 @@ func setBlock(block Block) error {
 	return nil
 }
 
-func getChildrenById(childrenKeys []string) ([]Block, error) {
+func getChildren(childrenKeys []string) ([]Block, error) {
 	db := database.ConnectWithDB()
 	result, err := db.MGet(database.CTX, childrenKeys...).Result()
 	if err != nil {
@@ -158,22 +158,4 @@ func getChildrenById(childrenKeys []string) ([]Block, error) {
 		childrenBlocks = append(childrenBlocks, childBlock)
 	}
 	return childrenBlocks, nil
-}
-
-func getKeys(pattern string) []string {
-	db := database.ConnectWithDB()
-	result, err := db.Keys(database.CTX, pattern).Result()
-	if err != nil {
-		return nil
-	}
-	return result
-}
-
-func getIndividualBlockId(compositeKey string) string {
-	return strings.Split(compositeKey, ":")[0]
-}
-
-func updatedBlockId(key, parentKey string) string {
-	blockKey := getIndividualBlockId(key)
-	return blockKey + ":" + parentKey
 }

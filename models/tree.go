@@ -1,6 +1,7 @@
 package models
 
 import (
+	"redis-task/utils"
 	"reflect"
 )
 
@@ -14,19 +15,19 @@ func GetTreeById(id string) Tree {
 	var blockId string
 	var keysChildren []string
 	if id == "0" {
-		keysChildren = getKeys("*:" + id)
+		keysChildren = utils.GetKeys("*:" + id)
 		tree.Block = Block{}
 	} else {
 		tree.Block = GetBlockById(id)
 		if reflect.DeepEqual(tree.Block, Block{}) {
 			return Tree{}
 		}
-		blockId = getIndividualBlockId(tree.Block.ID)
-		keysChildren = getKeys("*:" + blockId)
+		blockId = utils.GetIndividualBlockId(tree.Block.ID)
+		keysChildren = utils.GetKeys("*:" + blockId)
 	}
 
 	for _, keyChild := range keysChildren {
-		tree.Children = append(tree.Children, GetTreeById(getIndividualBlockId(keyChild)))
+		tree.Children = append(tree.Children, GetTreeById(utils.GetIndividualBlockId(keyChild)))
 	}
 	return tree
 }
